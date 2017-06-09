@@ -42,6 +42,11 @@ class App extends Component {
         //Fetch the calendar configuration from dummy API
         this.setState({ loading: true });
         fetchConfig().then((res) => {
+            //make sure the minimum move in date is greater than today.
+            if (new Date(res.minimum_move_in) < new Date()) {
+                res.minimum_move_in = moment().add(1, 'days').format('YYYY-MM-DD');
+            }
+
             this.setState({
                 minStartDate: res.minimum_move_in,
                 minimumDuration: res.minimum_duration,

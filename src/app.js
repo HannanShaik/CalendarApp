@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import {
     View,
     Text,
-    TouchableOpacity,
-    StyleSheet
+    TouchableOpacity
 } from 'react-native';
 import moment from 'moment';
 
@@ -18,20 +17,19 @@ import { styles } from './styles';
 import { enumerateDaysBetweenDates, showAlert } from './utils';
 import { fetchConfig, applyDates } from './api-client';
 
-const INITIAL_STATE = {
-    moveInDate: '',
-    moveOutDate: '',
-    moveInButtonDisabled: false,
-    moveOutButtonDisabled: true,
-    loading: false
-}
-
 class App extends Component {
 
     constructor(props) {
         super(props);
         //set initial state for the component
-        this.state = INITIAL_STATE;
+        this.INITIAL_STATE = {
+            moveInDate: '',
+            moveOutDate: '',
+            moveInButtonDisabled: false,
+            moveOutButtonDisabled: true,
+            loading: false
+        };
+        this.state = this.INITIAL_STATE;
 
         //Bind Methods
         this.onMoveInDateSelection = this.onMoveInDateSelection.bind(this);
@@ -42,7 +40,7 @@ class App extends Component {
 
     componentWillMount() {
         //Fetch the calendar configuration from dummy API
-        this.setState({ loading: true })
+        this.setState({ loading: true });
         fetchConfig().then((res) => {
             this.setState({
                 minStartDate: res.minimum_move_in,
@@ -54,58 +52,14 @@ class App extends Component {
     }
 
     /**
-     * Highlight the selected dates
-     * @param {*} start start date
-     * @param {*} end end date
-     */
-    markDays(start, end) {
-        if (this.isInBlockPeriod(start) || this.isInBlockPeriod(end)) {
-            showAlert('Dates are blocked!', 'You cannot choose these dates.');
-            return;
-        }
-
-        start = moment(start);
-        end = moment(end);
-        const dates = enumerateDaysBetweenDates(start, end);
-
-        const markedDays = {};
-        for (let date of dates) {
-            if (this.isInBlockPeriod(date)) {
-                showAlert('Dates are blocked!', 'You cannot choose these dates.');
-                return;
-            } else {
-                markedDays[date] = [{ selected: true, color: '#ffd749' }];
-            }
-        }
-        markedDays[start.format('YYYY-MM-DD')] = [{ startingDay: true, color: '#ffd749' }];
-        markedDays[end.format('YYYY-MM-DD')] = [{ endingDay: true, color: '#ffd749' }];
-
-        return markedDays;
-    }
-
-    /**
-     * Check if the given date falls within any of the blocked period.
-     * @param {*} date 
-     */
-    isInBlockPeriod(date) {
-        for (let blockPeriod of this.state.blockPeriods) {
-            const startDate = moment(blockPeriod.start)
-                , endDate = moment(blockPeriod.end)
-                , checkDate = moment(date);
-            if (date && checkDate.isBetween(startDate, endDate, 'days', true)) {
-                return true;
-            }
-        }
-    }
-
-    /**
      * On selection of move-in date
      * @param {*} date 
      */
     onMoveInDateSelection(date) {
-        this.setState({ 
-            moveInDate: date, 
-            moveOutButtonDisabled: false });
+        this.setState({
+            moveInDate: date,
+            moveOutButtonDisabled: false
+        });
     }
 
     /**
@@ -115,10 +69,15 @@ class App extends Component {
     onMoveOutDateSelection(date) {
         const { moveInDate, minimumDuration } = this.state;
         if (moment(date).diff(moment(moveInDate), 'days') + 1 < minimumDuration) {
-            showAlert('Minimum Dates are not met!', 'Minimum ' + minimumDuration + ' should be selected');
+            showAlert('Minimum Dates are not met!',
+                `Minimum ${minimumDuration} should be selected`);
             return;
         }
-        this.setState({ moveOutDate: date, moveInButtonDisabled: true, moveOutButtonDisabled: true });
+        this.setState({
+            moveOutDate: date,
+            moveInButtonDisabled: true,
+            moveOutButtonDisabled: true
+        });
     }
 
     /**
@@ -133,20 +92,67 @@ class App extends Component {
 
         applyDates({ moveInDate, moveOutDate });
         showAlert('Successfully booked the dates!');
+        this.setState(this.INITIAL_STATE);
+    }
+
+    /**
+     * Highlight the selected dates
+     * @param {*} start start date
+     * @param {*} end end date
+     */
+    markDays(startDate, endDate) {
+        if (this.isInBlockPeriod(startDate) || this.isInBlockPeriod(endDate)) {
+            showAlert('Dates are blocked!', 'You cannot choose these dates.');
+            return;
+        }
+
+        const start = moment(startDate);
+        const end = moment(endDate);
+        const dates = enumerateDaysBetweenDates(start, end);
+
+        const markedDays = {};
+        for (const date of dates) {
+            if (this.isInBlockPeriod(date)) {
+                showAlert('Dates are blocked!', 'You cannot choose these dates.');
+                return;
+            }
+            markedDays[date] = [{ selected: true, color: '#ffd749' }];
+        }
+        markedDays[start.format('YYYY-MM-DD')] = [{ startingDay: true, color: '#ffd749' }];
+        markedDays[end.format('YYYY-MM-DD')] = [{ endingDay: true, color: '#ffd749' }];
+
+        return markedDays;
+    }
+
+    /**
+     * Check if the given date falls within any of the blocked period.
+     * @param {*} date 
+     */
+    isInBlockPeriod(date) {
+        for (const blockPeriod of this.state.blockPeriods) {
+            const startDate = moment(blockPeriod.start);
+            const endDate = moment(blockPeriod.end);
+            const checkDate = moment(date);
+            if (date && checkDate.isBetween(startDate, endDate, 'days', true)) {
+                return true;
+            }
+        }
     }
 
     renderProgressView() {
         return (
             <Spinner size="large" />
-        )
+        );
     }
 
     render() {
         const { containerStyle, datePickersStyle, applyButtonStyle } = styles;
-        const { minStartDate, moveInDate, moveOutDate, moveInButtonDisabled, moveOutButtonDisabled, loading } = this.state;
+        const { minStartDate, moveInDate, moveOutDate,
+            moveInButtonDisabled, moveOutButtonDisabled, loading } = this.state;
+
         return (
             <View style={containerStyle}>
-                <Header title="Calendar" onPress={() => this.setState(INITIAL_STATE)} />
+                <Header title="Calendar" onPress={() => this.setState(this.INITIAL_STATE)} />
                 <View style={datePickersStyle}>
                     <DatePicker
                         title="Move In"

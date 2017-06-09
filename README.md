@@ -22,15 +22,7 @@ Have written appropriate comments where ever required.
 ## Screenshots
 
 ### iOS
-![0](screenshots/ios/0.png)
-![1](screenshots/ios/1.png)
-![2](screenshots/ios/2.png)
-![3](screenshots/ios/3.png)
-![4](screenshots/ios/4.png)
+![0](screenshots/ios.gif)
 
 ### Android
-![0](screenshots/android/0.png)
-![1](screenshots/android/1.png)
-![2](screenshots/android/2.png)
-![3](screenshots/android/3.png)
-![4](screenshots/android/4.png)
+![0](screenshots/android.gif)
